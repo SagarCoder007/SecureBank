@@ -93,30 +93,30 @@ export default function CustomerLoginPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
       
-      <div className="flex items-center justify-center px-4 py-12">
+      <div className="flex items-center justify-center px-4 py-8 sm:py-12 min-h-[calc(100vh-4rem)]">
         <div className="w-full max-w-md">
           {/* Welcome Section */}
-          <div className="text-center mb-8">
-            <div className="mx-auto w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="mx-auto w-14 h-14 sm:w-16 sm:h-16 bg-indigo-600 rounded-full flex items-center justify-center mb-3 sm:mb-4">
+              <svg className="w-7 h-7 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-2">
               Sign in to your SecureBank account to manage your finances
             </p>
           </div>
 
           {/* Login Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Customer Login</CardTitle>
-              <CardDescription>
+          <Card className="shadow-lg border-0">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg sm:text-xl">Customer Login</CardTitle>
+              <CardDescription className="text-sm sm:text-base">
                 Enter your credentials to access your account
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4 sm:space-y-5">
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* General Error */}
                 {errors.general && (

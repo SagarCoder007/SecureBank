@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 import { Toast, ToastProps } from './Toast';
 
 interface ToastContextType {
@@ -24,6 +24,12 @@ interface ToastProviderProps {
 
 export function ToastProvider({ children }: ToastProviderProps) {
   const [toasts, setToasts] = useState<ActiveToast[]>([]);
+  const [isClient, setIsClient] = useState(false);
+
+  // Ensure this only runs on client side to prevent hydration mismatch
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const removeToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
@@ -68,13 +74,15 @@ export function ToastProvider({ children }: ToastProviderProps) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="fixed top-4 right-4 z-50 space-y-2 pointer-events-none">
-        {toasts.map((toast) => (
-          <div key={toast.id} className="pointer-events-auto">
-            <Toast {...toast} />
-          </div>
-        ))}
-      </div>
+      {isClient && (
+        <div className="fixed top-20 sm:top-24 right-4 z-30 space-y-2 pointer-events-none">
+          {toasts.map((toast) => (
+            <div key={toast.id} className="pointer-events-auto">
+              <Toast {...toast} />
+            </div>
+          ))}
+        </div>
+      )}
     </ToastContext.Provider>
   );
 }

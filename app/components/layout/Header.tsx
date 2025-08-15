@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import { useToast } from '../ui/ToastProvider';
 
@@ -12,15 +12,34 @@ interface HeaderProps {
     role: string;
   } | null;
   onLogout?: () => void;
+  onNavigate?: (section: string) => void;
 }
 
-export function Header({ user, onLogout }: HeaderProps) {
+export function Header({ user, onLogout, onNavigate }: HeaderProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { showInfo } = useToast();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [dropdownOpen]);
 
   return (
-    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
+    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm relative z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -44,12 +63,18 @@ export function Header({ user, onLogout }: HeaderProps) {
             <nav className="hidden md:flex space-x-8">
               {user.role === 'CUSTOMER' && (
                 <>
-                  <a href="/dashboard" className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-2 text-sm font-medium">
+                  <button 
+                    onClick={() => onNavigate?.('dashboard')} 
+                    className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-2 text-sm font-medium"
+                  >
                     Dashboard
-                  </a>
-                  <a href="/transactions" className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-2 text-sm font-medium">
+                  </button>
+                  <button 
+                    onClick={() => onNavigate?.('transactions')} 
+                    className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-2 text-sm font-medium"
+                  >
                     Transactions
-                  </a>
+                  </button>
                 </>
               )}
               {(user.role === 'BANKER' || user.role === 'ADMIN') && (
@@ -84,7 +109,7 @@ export function Header({ user, onLogout }: HeaderProps) {
             )}
             
             {user ? (
-              <div className="relative">
+              <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 focus:outline-none transition-colors"
@@ -113,9 +138,15 @@ export function Header({ user, onLogout }: HeaderProps) {
                           {user.role}
                         </p>
                       </div>
-                      <a href="/profile" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                      <button
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          showInfo('Profile Settings', 'Profile settings feature coming soon!');
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
                         Profile Settings
-                      </a>
+                      </button>
                       <button
                         onClick={onLogout}
                         className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -160,26 +191,30 @@ export function Header({ user, onLogout }: HeaderProps) {
             {/* Navigation links */}
             {user.role === 'CUSTOMER' && (
               <>
-                <a 
-                  href="/dashboard" 
-                  className="flex items-center space-x-3 px-3 py-3 text-base font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
+                <button 
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onNavigate?.('dashboard');
+                  }} 
+                  className="flex items-center space-x-3 px-3 py-3 text-base font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors w-full text-left"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
                   </svg>
                   <span>Dashboard</span>
-                </a>
-                <a 
-                  href="/transactions" 
-                  className="flex items-center space-x-3 px-3 py-3 text-base font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
+                </button>
+                <button 
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onNavigate?.('transactions');
+                  }} 
+                  className="flex items-center space-x-3 px-3 py-3 text-base font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors w-full text-left"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                   <span>Transactions</span>
-                </a>
+                </button>
               </>
             )}
             {(user.role === 'BANKER' || user.role === 'ADMIN') && (

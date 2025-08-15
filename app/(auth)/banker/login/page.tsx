@@ -99,32 +99,32 @@ export default function BankerLoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <Header />
       
-      <div className="flex items-center justify-center px-4 py-12">
+      <div className="flex items-center justify-center px-4 py-8 sm:py-12 min-h-[calc(100vh-4rem)]">
         <div className="w-full max-w-md">
           {/* Welcome Section */}
-          <div className="text-center mb-8">
-            <div className="mx-auto w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="mx-auto w-14 h-14 sm:w-16 sm:h-16 bg-purple-600 rounded-full flex items-center justify-center mb-3 sm:mb-4">
+              <svg className="w-7 h-7 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Banker Portal</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Banker Portal</h1>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-2">
               Secure access for banking professionals
             </p>
           </div>
 
           {/* Login Card */}
-          <Card className="shadow-xl">
-            <CardHeader>
-              <CardTitle className="text-purple-600 dark:text-purple-400">
+          <Card className="shadow-xl border-0">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg sm:text-xl text-purple-600 dark:text-purple-400">
                 Banker Access
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm sm:text-base">
                 Enter your banking credentials to access the management portal
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4 sm:space-y-5">
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* General Error */}
                 {errors.general && (
