@@ -34,10 +34,10 @@ export function Toast({
   if (!isVisible) return null;
 
   const typeStyles = {
-    success: 'bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-200',
-    error: 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-200',
-    warning: 'bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-200',
-    info: 'bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-200'
+    success: 'bg-green-50 border-green-200 text-green-800 dark:bg-green-900/30 dark:border-green-700 dark:text-green-200',
+    error: 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/30 dark:border-red-700 dark:text-red-200',
+    warning: 'bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/30 dark:border-amber-700 dark:text-amber-200',
+    info: 'bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-200'
   };
 
   const iconStyles = {
@@ -72,8 +72,9 @@ export function Toast({
 
   return (
     <div className={cn(
-      'fixed top-4 right-4 z-50 w-full max-w-sm p-4 border rounded-xl shadow-lg transition-all duration-300 ease-in-out',
-      'transform translate-x-0 opacity-100',
+      'relative w-full p-4 border rounded-xl shadow-xl transition-all duration-300 ease-in-out',
+      'transform translate-x-0 opacity-100 backdrop-blur-sm',
+      'hover:shadow-2xl hover:scale-[1.02]',
       typeStyles[type]
     )}>
       <div className="flex items-start space-x-3">

@@ -75,9 +75,13 @@ export function ToastProvider({ children }: ToastProviderProps) {
     <ToastContext.Provider value={value}>
       {children}
       {isClient && (
-        <div className="fixed top-20 sm:top-24 right-4 z-30 space-y-2 pointer-events-none">
-          {toasts.map((toast) => (
-            <div key={toast.id} className="pointer-events-auto">
+        <div className="fixed top-20 sm:top-24 right-4 z-[9999] space-y-3 pointer-events-none max-w-sm w-full">
+          {toasts.map((toast, index) => (
+            <div 
+              key={toast.id} 
+              className="pointer-events-auto animate-in slide-in-from-right-5 duration-300"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
               <Toast {...toast} />
             </div>
           ))}
