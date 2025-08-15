@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '../ui/Button';
+import { useToast } from '../ui/ToastProvider';
 
 interface HeaderProps {
   user?: {
@@ -15,6 +16,8 @@ interface HeaderProps {
 
 export function Header({ user, onLogout }: HeaderProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { showInfo } = useToast();
 
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
@@ -23,9 +26,16 @@ export function Header({ user, onLogout }: HeaderProps) {
           {/* Logo */}
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <h1 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                🏦 SecureBank
-              </h1>
+              <a href="/" className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                </div>
+                <h1 className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
+                  SecureBank
+                </h1>
+              </a>
             </div>
           </div>
 
@@ -55,21 +65,37 @@ export function Header({ user, onLogout }: HeaderProps) {
             </nav>
           )}
 
-          {/* User Menu */}
+          {/* Desktop User Menu & Mobile Menu Button */}
           <div className="flex items-center space-x-4">
+            {user && (
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden inline-flex items-center justify-center p-2 rounded-xl text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                aria-label="Open mobile menu"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {mobileMenuOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
+              </button>
+            )}
+            
             {user ? (
               <div className="relative">
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 focus:outline-none"
+                  className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 focus:outline-none transition-colors"
                 >
-                  <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                  <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-sm">
                     {user.firstName.charAt(0)}{user.lastName.charAt(0)}
                   </div>
                   <span className="hidden md:block text-sm font-medium">
                     {user.firstName} {user.lastName}
                   </span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className={`w-4 h-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
@@ -114,30 +140,86 @@ export function Header({ user, onLogout }: HeaderProps) {
         </div>
       </div>
 
-      {/* Mobile menu (when user is logged in) */}
-      {user && (
-        <div className="md:hidden bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-          <div className="px-2 pt-2 pb-3 space-y-1">
+      {/* Enhanced Mobile menu */}
+      {user && mobileMenuOpen && (
+        <div className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg">
+          <div className="px-4 pt-4 pb-6 space-y-3">
+            {/* User info in mobile menu */}
+            <div className="flex items-center space-x-3 pb-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
+                {user.firstName.charAt(0)}{user.lastName.charAt(0)}
+              </div>
+              <div>
+                <p className="text-base font-medium text-gray-900 dark:text-gray-100">
+                  {user.firstName} {user.lastName}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{user.role}</p>
+              </div>
+            </div>
+            
+            {/* Navigation links */}
             {user.role === 'CUSTOMER' && (
               <>
-                <a href="/dashboard" className="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
-                  Dashboard
+                <a 
+                  href="/dashboard" 
+                  className="flex items-center space-x-3 px-3 py-3 text-base font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                  </svg>
+                  <span>Dashboard</span>
                 </a>
-                <a href="/transactions" className="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
-                  Transactions
+                <a 
+                  href="/transactions" 
+                  className="flex items-center space-x-3 px-3 py-3 text-base font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                  <span>Transactions</span>
                 </a>
               </>
             )}
             {(user.role === 'BANKER' || user.role === 'ADMIN') && (
               <>
-                <a href="/banker/accounts" className="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
-                  Accounts
+                <a 
+                  href="/banker/accounts" 
+                  className="flex items-center space-x-3 px-3 py-3 text-base font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  <span>Accounts</span>
                 </a>
-                <a href="/banker/dashboard" className="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
-                  Dashboard
+                <a 
+                  href="/banker/dashboard" 
+                  className="flex items-center space-x-3 px-3 py-3 text-base font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                  </svg>
+                  <span>Dashboard</span>
                 </a>
               </>
             )}
+            
+            {/* Logout button */}
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onLogout?.();
+              }}
+              className="flex items-center space-x-3 w-full px-3 py-3 text-base font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span>Sign Out</span>
+            </button>
           </div>
         </div>
       )}
