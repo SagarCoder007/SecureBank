@@ -4,7 +4,7 @@ import { prisma } from '../../../../../lib/db';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { accountId: string } }
+  { params }: { params: Promise<{ accountId: string }> }
 ) {
   try {
     const user = await getCurrentUser(request);
@@ -23,7 +23,7 @@ export async function GET(
       );
     }
 
-    const { accountId } = params;
+    const { accountId } = await params;
 
     // Get account with user information
     const account = await prisma.account.findUnique({
@@ -80,10 +80,7 @@ export async function GET(
       createdAt: transaction.createdAt.toISOString(),
     }));
 
-    return NextResponse.json({
-      account: formattedAccount,
-      transactions: formattedTransactions
-    });
+    return NextResponse.json(formattedTransactions);
 
   } catch (error) {
     console.error('Account transactions fetch error:', error);
