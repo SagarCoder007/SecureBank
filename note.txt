@@ -1,0 +1,149 @@
+
+**📘 Assignment: Build a Simple Banking System**
+
+### 🎯 Objective
+
+Create a basic banking system using **Next.js** (React framework with API routes) for both frontend and backend, **MySQL** (hosted on Railway free tier) as the database, **Prisma ORM**, and **bcrypt** + **crypto** for authentication and token generation. The app should follow the **MVC (Model-View-Controller)** pattern.
+
+The **Customer** and **Banker** interfaces must have a **modern, professional, and visually appealing design**, ensuring a clean layout, consistent typography, intuitive navigation, and responsive behavior across devices.
+
+---
+
+### 🧱 Task Details
+
+#### 1. **Database Setup**
+
+* Create a database named `Bank` in **Railway MySQL (free tier)**.
+* Use **Prisma** to define and manage schema.
+* Tables:
+
+  * **Users**: Stores details of both bankers and customers.
+  * **Accounts**: Logs cash deposit and withdrawal transactions.
+
+#### 2. **Customer Login**
+
+* Build a login page with **username/email** and **password** fields.
+* Store hashed passwords using **bcrypt**.
+* On successful login, generate a **36-character alphanumeric access token** using **crypto**.
+* Include the token in the `Authorization` header for protected API routes.
+
+#### 3. **Transactions Page (Customer Side)**
+
+* Redirect customers to the **Transactions** page after login.
+* Display all past transaction records in a visually clean and well-structured table or list.
+* Add **Deposit** and **Withdraw** buttons:
+
+  * Clicking opens a modern popup/modal showing available balance and numeric input field.
+  * Update balance in the database using **Prisma**.
+  * Show **"Insufficient Funds"** if withdrawal exceeds available balance.
+
+#### 4. **Banker Login**
+
+* Separate login page for bankers.
+* Redirect bankers to an **Accounts** page listing all customer accounts with a clean, dashboard-style layout.
+* Clicking on a customer shows their **transaction history** in a well-organized view.
+
+---
+
+### 🎨 UI Guidelines & Component Breakdown
+
+#### **1. Design Principles**
+
+* **Look & Feel**: Clean fintech dashboard style, minimal yet premium.
+* **Color Palette**:
+
+  * Base: light/dark neutral backgrounds (#F9FAFB light, #1E1E2F dark)
+  * Primary: Indigo/Blue (#4F46E5)
+  * Success: Green (#10B981)
+  * Danger: Red (#EF4444)
+* **Typography**: Inter or DM Sans; headings bold, body regular; use consistent sizes (14px, 16px, 20px).
+* **Spacing**: 16px minimum padding; 24px between major sections.
+* **Borders**: Rounded corners (12px–16px) with subtle shadows.
+* **Dark Mode**: Full support with matching contrast levels.
+
+---
+
+#### **2. Core Components**
+
+**Header/Navbar**
+
+* Contains app logo, navigation links, user profile/avatar with dropdown.
+* Responsive: collapses to hamburger menu on mobile.
+
+**Login Page (Customer & Banker)**
+
+* Centered card layout with input fields, password toggle, and large login button.
+* Error messages appear inline under fields.
+* Optional branding image/illustration on the side (desktop view).
+
+**Dashboard Cards**
+
+* Show key stats (balance, total deposits, total withdrawals).
+* Clickable for quick actions.
+
+**Transactions Table**
+
+* Columns: Date, Type, Amount, Balance After, Notes.
+* Sortable by Date and Amount.
+* Empty state: “No transactions yet” with illustration and CTA.
+
+**Deposit/Withdraw Modal**
+
+* Large centered modal with balance shown at top.
+* Numeric input with increment/decrement controls.
+* “Confirm” and “Cancel” buttons.
+
+**Accounts Table (Banker)**
+
+* Shows customer name, email, current balance, and last transaction date.
+* Click on a row to open detailed transaction history view.
+
+**Transaction History View (Banker)**
+
+* Same table structure as customer’s transaction list.
+* Includes customer’s name and contact details at top.
+
+**Buttons & Forms**
+
+* Primary: solid fill, hover shade change.
+* Secondary: outline with hover background.
+* Destructive: red theme for withdrawals or account deletions.
+* All inputs have clear labels, placeholders, and inline validation.
+
+**Toasts & Alerts**
+
+* Small notifications for success/error actions (top-right corner).
+* Auto-dismiss after 3 seconds.
+
+---
+
+#### **3. Responsiveness**
+
+* Mobile-first layouts.
+* Tables collapse into card lists on small screens.
+* Navigation becomes bottom bar or drawer for mobile.
+
+---
+
+#### **4. Accessibility**
+
+* WCAG AA color contrast.
+* Keyboard navigation for all interactive elements.
+* Focus rings visible in both light and dark themes.
+* ARIA labels for modals, tables, and toasts.
+
+---
+
+### ✅ Evaluation Criteria
+
+* **Functionality**: Meets all requirements above.
+* **Code Quality**: Clean, modular, follows MVC structure.
+* **Tech Stack Usage**: Proper implementation of Next.js API routes, Prisma ORM, Railway MySQL, bcrypt, and crypto.
+* **User Experience & Design**:
+
+  * Modern, professional UI with consistent components.
+  * Responsive across mobile, tablet, and desktop.
+  * Intuitive navigation for both customers and bankers.
+  * Accessible and easy to use.
+
+---

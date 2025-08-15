@@ -1,0 +1,109 @@
+// Banking Portal Prisma Schema
+// This schema defines the database structure for the banking system
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Users table - stores both customers and bankers
+model User {
+  id          String      @id @default(cuid())
+  email       String      @unique
+  username    String?     @unique
+  password    String      // bcrypt hashed password
+  firstName   String
+  lastName    String
+  role        UserRole    @default(CUSTOMER)
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  // Relationships
+  accounts    Account[]   // A user can have multiple accounts
+  sessions    Session[]   // User sessions for token management
+  
+  @@map("users")
+}
+
+// Account table - represents bank accounts for customers
+model Account {
+  id            String        @id @default(cuid())
+  accountNumber String        @unique
+  accountType   AccountType   @default(SAVINGS)
+  balance       Decimal       @default(0.00) @db.Decimal(10, 2)
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  // Foreign key
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Relationships
+  transactions  Transaction[]
+  
+  @@map("accounts")
+}
+
+// Transaction table - logs all deposit and withdrawal operations
+model Transaction {
+  id              String            @id @default(cuid())
+  type            TransactionType
+  amount          Decimal           @db.Decimal(10, 2)
+  balanceAfter    Decimal           @db.Decimal(10, 2)
+  description     String?
+  status          TransactionStatus @default(COMPLETED)
+  createdAt       DateTime          @default(now())
+  
+  // Foreign key
+  accountId       String
+  account         Account           @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  
+  @@map("transactions")
+}
+
+// Session table - manages user authentication tokens
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique // 36-character alphanumeric token
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  // Foreign key
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("sessions")
+}
+
+// Enums
+enum UserRole {
+  CUSTOMER
+  BANKER
+  ADMIN
+}
+
+enum AccountType {
+  SAVINGS
+  CHECKING
+  BUSINESS
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER_IN
+  TRANSFER_OUT
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
