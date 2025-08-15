@@ -7,25 +7,47 @@ export async function POST(request: NextRequest) {
     const authHeader = request.headers.get('authorization');
     const accessToken = authHeader?.replace('Bearer ', '');
 
+    console.log('Logout API called:', {
+      hasAuthHeader: !!authHeader,
+      hasAccessToken: !!accessToken,
+      tokenLength: accessToken?.length || 0
+    });
+
     if (accessToken) {
       try {
         // Delete the session from database
         await SessionService.deleteSession(accessToken);
+        console.log('Session deleted successfully for token');
       } catch (error) {
         // Session might not exist or already deleted, continue with logout
-        console.log('Session not found during logout:', error);
+        console.log('Session not found during logout (this is normal):', error);
       }
+    } else {
+      console.log('No access token provided for logout');
+    }
+
+    // Clean up any expired sessions while we're at it
+    try {
+      await SessionService.cleanupExpiredSessions();
+      console.log('Expired sessions cleaned up');
+    } catch (error) {
+      console.log('Failed to cleanup expired sessions:', error);
     }
 
     // Create response
     const response = NextResponse.json(
-      { message: 'Logged out successfully' },
+      { 
+        message: 'Logged out successfully',
+        timestamp: new Date().toISOString()
+      },
       { status: 200 }
     );
 
-    // Clear auth cookies
+    // Clear auth cookies (both customer and banker)
     response.cookies.delete('auth-token');
     response.cookies.delete('banker-auth-token');
+    
+    console.log('Logout completed successfully');
 
     return response;
 

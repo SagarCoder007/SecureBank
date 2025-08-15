@@ -56,7 +56,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate tokens
+    // Clean up any existing sessions for this user (fresh session)
+    try {
+      await SessionService.deleteAllUserSessions(user.id);
+      console.log('Cleaned up existing sessions for user:', user.email);
+    } catch (error) {
+      console.log('No existing sessions to clean up:', error);
+    }
+
+    // Generate fresh tokens
     const jwtToken = JWTUtils.generateJWT({
       userId: user.id,
       email: user.email,
@@ -66,8 +74,10 @@ export async function POST(request: NextRequest) {
     const accessToken = AccessTokenUtils.generateAccessToken();
     const expiresAt = AccessTokenUtils.generateTokenExpiration();
 
-    // Create session
+    // Create fresh session
     await SessionService.createSession(user.id, accessToken, expiresAt);
+    
+    console.log('Fresh banker session created for:', user.email);
 
     // Prepare response data
     const responseData = {

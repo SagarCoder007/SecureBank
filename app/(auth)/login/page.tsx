@@ -52,6 +52,10 @@ export default function CustomerLoginPage() {
     setErrors({});
 
     try {
+      // Clear any existing tokens before customer login
+      localStorage.removeItem('user');
+      localStorage.removeItem('accessToken');
+
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -66,6 +70,12 @@ export default function CustomerLoginPage() {
         // Store user data and tokens
         localStorage.setItem('user', JSON.stringify(data.user));
         localStorage.setItem('accessToken', data.tokens.accessToken);
+        
+        console.log('Customer login successful:', {
+          email: data.user.email,
+          role: data.user.role,
+          tokenLength: data.tokens.accessToken.length
+        });
         
         // Redirect to customer dashboard
         router.push('/dashboard');

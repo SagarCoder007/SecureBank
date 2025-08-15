@@ -52,6 +52,10 @@ export default function BankerLoginPage() {
     setErrors({});
 
     try {
+      // Clear any existing tokens before banker login
+      localStorage.removeItem('user');
+      localStorage.removeItem('accessToken');
+
       const response = await fetch('/api/auth/banker-login', {
         method: 'POST',
         headers: {
@@ -63,9 +67,21 @@ export default function BankerLoginPage() {
       const data = await response.json();
 
       if (response.ok) {
+        // Verify the user has banker role
+        if (data.user.role !== 'BANKER' && data.user.role !== 'ADMIN') {
+          setErrors({ general: 'Access denied. This account does not have banker privileges.' });
+          return;
+        }
+
         // Store user data and tokens
         localStorage.setItem('user', JSON.stringify(data.user));
         localStorage.setItem('accessToken', data.tokens.accessToken);
+        
+        console.log('Banker login successful:', {
+          email: data.user.email,
+          role: data.user.role,
+          tokenLength: data.tokens.accessToken.length
+        });
         
         // Redirect to banker dashboard
         router.push('/banker/dashboard');

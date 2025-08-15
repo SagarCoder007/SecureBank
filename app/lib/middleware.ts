@@ -41,9 +41,25 @@ export async function authenticate(request: NextRequest): Promise<{
     const accessToken = authHeader?.replace('Bearer ', '');
 
     if (accessToken) {
+      console.log('Middleware - checking access token:', {
+        hasToken: !!accessToken,
+        tokenLength: accessToken.length,
+        tokenPreview: accessToken.substring(0, 10) + '...'
+      });
+
       const session = await SessionService.findByToken(accessToken);
       
+      console.log('Middleware - session lookup:', {
+        hasSession: !!session,
+        sessionId: session?.id,
+        userId: session?.user?.id,
+        userEmail: session?.user?.email,
+        userRole: session?.user?.role,
+        isExpired: session ? new Date() > session.expiresAt : null
+      });
+
       if (!session) {
+        console.log('Middleware - no session found for token');
         return {
           user: null,
           error: 'Invalid access token',
@@ -52,6 +68,7 @@ export async function authenticate(request: NextRequest): Promise<{
 
       // Check if token is expired
       if (new Date() > session.expiresAt) {
+        console.log('Middleware - token expired, cleaning up');
         // Clean up expired token
         await SessionService.deleteSession(accessToken);
         return {
@@ -62,18 +79,23 @@ export async function authenticate(request: NextRequest): Promise<{
 
       // Check if user is active
       if (!session.user.isActive) {
+        console.log('Middleware - user account deactivated');
         return {
           user: null,
           error: 'Account is deactivated',
         };
       }
 
+      const authenticatedUser = {
+        userId: session.user.id,
+        email: session.user.email,
+        role: session.user.role,
+      };
+
+      console.log('Middleware - authentication successful:', authenticatedUser);
+
       return {
-        user: {
-          userId: session.user.id,
-          email: session.user.email,
-          role: session.user.role,
-        },
+        user: authenticatedUser,
         error: null,
       };
     }
