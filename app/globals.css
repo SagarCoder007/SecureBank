@@ -34,3 +34,26 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Chrome, Safari and Opera */
 }
+
+/* Enhanced responsive design utilities */
+@media (max-width: 480px) {
+  .banker-dashboard {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .banker-dashboard {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Improve table scrolling on smaller screens */
+@media (max-width: 1024px) {
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

@@ -7,6 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { performCompleteLogout } from '../../lib/logout-utils';
+import { RecentTransactionsWidget } from '../../components/banker/RecentTransactionsWidget';
+import { CustomerInsightsWidget } from '../../components/banker/CustomerInsightsWidget';
+import { AnalyticsWidget } from '../../components/banker/AnalyticsWidget';
+import { AccountFiltersWidget } from '../../components/banker/AccountFiltersWidget';
+import { filterAccounts } from '../../lib/export-utils';
 
 interface User {
   id: string;
@@ -54,19 +59,66 @@ interface Transaction {
   description: string;
   status: string;
   createdAt: string;
+  account: {
+    accountNumber: string;
+    accountType: string;
+  };
+  customer: {
+    name: string;
+    email: string;
+  };
+}
+
+
+
+interface CustomerInsight {
+  accountId: string;
+  accountNumber: string;
+  customerName: string;
+  customerEmail: string;
+  totalDeposits?: number;
+  transactionCount: number;
+  currentBalance: number;
+}
+
+interface DashboardData {
+  accounts: Account[];
+  recentTransactions: Transaction[];
+  statistics: Statistics;
+  analytics: {
+    monthlyTransactions: any[];
+    transactionTrends: any[];
+  };
+  customerInsights: {
+    topDepositors: CustomerInsight[];
+    mostActiveCustomers: CustomerInsight[];
+  };
+}
+
+interface FilterOptions {
+  search: string;
+  status: 'all' | 'active' | 'inactive';
+  accountType: 'all' | 'SAVINGS' | 'CHECKING' | 'BUSINESS';
+  balanceRange: 'all' | 'low' | 'medium' | 'high';
 }
 
 export default function BankerDashboard() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [statistics, setStatistics] = useState<Statistics | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [accountTransactions, setAccountTransactions] = useState<Transaction[]>([]);
   const [transactionModalOpen, setTransactionModalOpen] = useState(false);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<FilterOptions>({
+    search: '',
+    status: 'all',
+    accountType: 'all',
+    balanceRange: 'all'
+  });
+  const [filteredAccounts, setFilteredAccounts] = useState<Account[]>([]);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -99,16 +151,28 @@ export default function BankerDashboard() {
 
     console.log('Banker dashboard access granted for:', userData.email, 'Role:', userData.role);
     setUser(userData);
-    fetchAccounts();
+    fetchDashboardData();
   }, [router]);
 
-  const fetchAccounts = async () => {
+  // Handle filter changes
+  useEffect(() => {
+    if (dashboardData) {
+      const filtered = filterAccounts(dashboardData.accounts, filters);
+      setFilteredAccounts(filtered);
+    }
+  }, [filters, dashboardData]);
+
+  const handleFilterChange = (newFilters: FilterOptions) => {
+    setFilters(newFilters);
+  };
+
+  const fetchDashboardData = async () => {
     try {
-      setError(null); // Clear any previous errors
+      setError(null);
       const accessToken = localStorage.getItem('accessToken');
       const user = localStorage.getItem('user');
       
-      console.log('Fetch accounts debug:', {
+      console.log('Fetch dashboard data debug:', {
         hasAccessToken: !!accessToken,
         accessTokenLength: accessToken?.length,
         hasUser: !!user,
@@ -123,7 +187,7 @@ export default function BankerDashboard() {
         return;
       }
 
-      const response = await fetch('/api/banker/accounts', {
+      const response = await fetch('/api/banker/dashboard', {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
         },
@@ -133,14 +197,14 @@ export default function BankerDashboard() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Successfully fetched accounts:', data.accounts?.length, 'accounts');
-        setAccounts(data.accounts);
-        setStatistics(data.statistics);
-        setError(null); // Clear error on success
+        console.log('Successfully fetched dashboard data:', data);
+        setDashboardData(data);
+        setFilteredAccounts(data.accounts || []);
+        setError(null);
       } else {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        const errorMessage = `Failed to fetch accounts (${response.status}): ${errorData.error || response.statusText}`;
-        console.error('Failed to fetch accounts:', {
+        const errorMessage = `Failed to fetch dashboard data (${response.status}): ${errorData.error || errorData.details || response.statusText}`;
+        console.error('Failed to fetch dashboard data:', {
           status: response.status,
           statusText: response.statusText,
           error: errorData,
@@ -148,7 +212,6 @@ export default function BankerDashboard() {
         });
         setError(errorMessage);
         
-        // If unauthorized, redirect to login
         if (response.status === 401) {
           console.log('Unauthorized - redirecting to login');
           localStorage.removeItem('user');
@@ -158,7 +221,7 @@ export default function BankerDashboard() {
       }
     } catch (error) {
       const errorMessage = `Network error: ${error instanceof Error ? error.message : 'Unknown error'}`;
-      console.error('Error fetching accounts (network/other):', error);
+      console.error('Error fetching dashboard data (network/other):', error);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -256,7 +319,7 @@ export default function BankerDashboard() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header user={user} onLogout={handleLogout} />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Welcome Section */}
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
@@ -292,63 +355,101 @@ export default function BankerDashboard() {
           </div>
         )}
 
-        {/* Statistics Cards */}
-        {statistics && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-            <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-white text-lg sm:text-xl">Total Accounts</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="text-2xl sm:text-3xl font-bold">{statistics.totalAccounts}</div>
-                <p className="text-blue-100 text-xs sm:text-sm">Active: {statistics.activeAccounts}</p>
-              </CardContent>
-            </Card>
+        {/* Enhanced Dashboard Grid */}
+        <div className="space-y-4 sm:space-y-6 lg:space-y-8">
+          {/* Top Row: Statistics Cards */}
+          {dashboardData?.statistics && (
+            <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+              <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-white text-lg">Total Accounts</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-2xl sm:text-3xl font-bold">{dashboardData.statistics.totalAccounts}</div>
+                  <p className="text-blue-100 text-xs sm:text-sm">Active: {dashboardData.statistics.activeAccounts}</p>
+                </CardContent>
+              </Card>
 
-            <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-white text-lg sm:text-xl">Total Balance</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="text-xl sm:text-2xl lg:text-3xl font-bold">{formatCurrency(statistics.totalBalance)}</div>
-                <p className="text-green-100 text-xs sm:text-sm">Across all accounts</p>
-              </CardContent>
-            </Card>
+              <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-white text-lg">Total Balance</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-xl sm:text-2xl font-bold">{formatCurrency(dashboardData.statistics.totalBalance)}</div>
+                  <p className="text-green-100 text-xs sm:text-sm">Across all accounts</p>
+                </CardContent>
+              </Card>
 
-            <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-white text-lg sm:text-xl">Total Transactions</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="text-2xl sm:text-3xl font-bold">{statistics.totalTransactions}</div>
-                <p className="text-purple-100 text-xs sm:text-sm">All time</p>
-              </CardContent>
-            </Card>
+              <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-white text-lg">Total Transactions</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-2xl sm:text-3xl font-bold">{dashboardData.statistics.totalTransactions}</div>
+                  <p className="text-purple-100 text-xs sm:text-sm">All time</p>
+                </CardContent>
+              </Card>
 
-            <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-white text-lg sm:text-xl">Average Balance</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="text-xl sm:text-2xl lg:text-3xl font-bold">
-                  {formatCurrency((parseFloat(statistics.totalBalance) / statistics.totalAccounts).toString())}
-                </div>
-                <p className="text-orange-100 text-xs sm:text-sm">Per account</p>
-              </CardContent>
-            </Card>
+              <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-white text-lg">Average Balance</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-xl sm:text-2xl font-bold">
+                    {formatCurrency((parseFloat(dashboardData.statistics.totalBalance) / dashboardData.statistics.totalAccounts).toString())}
+                  </div>
+                  <p className="text-orange-100 text-xs sm:text-sm">Per account</p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Second Row: Analytics Dashboard */}
+          <div className="w-full">
+            <AnalyticsWidget 
+              monthlyTransactions={dashboardData?.analytics.monthlyTransactions || []}
+              transactionTrends={dashboardData?.analytics.transactionTrends || []}
+              loading={loading}
+            />
           </div>
-        )}
 
-        {/* Accounts Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg sm:text-xl">Customer Accounts</CardTitle>
-            <CardDescription className="text-sm sm:text-base">
-              View and manage all customer bank accounts
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {accounts.length === 0 ? (
+          {/* Third Row: Customer Insights */}
+          <div className="w-full">
+            <CustomerInsightsWidget 
+              topDepositors={dashboardData?.customerInsights.topDepositors || []}
+              mostActiveCustomers={dashboardData?.customerInsights.mostActiveCustomers || []}
+              loading={loading}
+            />
+          </div>
+
+          {/* Fourth Row: Account Management */}
+          <div className="w-full">
+            <AccountFiltersWidget
+              accounts={dashboardData?.accounts || []}
+              recentTransactions={dashboardData?.recentTransactions || []}
+              onFilterChange={handleFilterChange}
+              filteredAccounts={filteredAccounts}
+              loading={loading}
+            />
+          </div>
+        </div>
+
+        {/* Filtered Accounts Table */}
+        <div className="mt-4 sm:mt-6 lg:mt-8">
+          <Card>
+            <CardHeader className="px-4 sm:px-6">
+              <CardTitle className="text-lg sm:text-xl lg:text-2xl">
+                Customer Accounts {filteredAccounts.length !== (dashboardData?.accounts.length || 0) && `(${filteredAccounts.length} filtered)`}
+              </CardTitle>
+              <CardDescription className="text-sm sm:text-base">
+                {filteredAccounts.length !== (dashboardData?.accounts.length || 0) 
+                  ? `Showing ${filteredAccounts.length} of ${dashboardData?.accounts.length || 0} accounts`
+                  : 'View and manage all customer bank accounts'
+                }
+              </CardDescription>
+            </CardHeader>
+          <CardContent className="px-4 sm:px-6">
+            {filteredAccounts.length === 0 ? (
               <div className="text-center py-8 sm:py-12">
                 <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-3 sm:mb-4">
                   <svg className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -366,7 +467,8 @@ export default function BankerDashboard() {
               <>
                 {/* Desktop Table View */}
                 <div className="hidden lg:block overflow-x-auto">
-                  <table className="w-full">
+                  <div className="min-w-full inline-block align-middle">
+                    <table className="w-full min-w-full">
                     <thead>
                       <tr className="border-b border-gray-200 dark:border-gray-700">
                         <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300 text-sm">
@@ -390,7 +492,7 @@ export default function BankerDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {accounts.map((account) => (
+                      {filteredAccounts.map((account) => (
                         <tr key={account.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800">
                           <td className="py-4 px-4">
                             <div>
@@ -462,12 +564,13 @@ export default function BankerDashboard() {
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 </div>
 
                 {/* Mobile & Tablet Card View */}
-                <div className="lg:hidden space-y-4">
-                  {accounts.map((account) => (
-                    <div key={account.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
+                <div className="lg:hidden space-y-3 sm:space-y-4">
+                  {filteredAccounts.map((account) => (
+                    <div key={account.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 sm:p-4 shadow-sm">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-1">
@@ -532,7 +635,16 @@ export default function BankerDashboard() {
               </>
             )}
           </CardContent>
-        </Card>
+          </Card>
+        </div>
+
+        {/* Recent Transactions Section - After Customer Accounts */}
+        <div className="mt-4 sm:mt-6 lg:mt-8">
+          <RecentTransactionsWidget 
+            transactions={dashboardData?.recentTransactions || []} 
+            loading={loading} 
+          />
+        </div>
       </div>
 
       {/* Transaction History Modal */}
