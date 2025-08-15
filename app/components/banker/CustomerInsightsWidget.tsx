@@ -160,7 +160,7 @@ export function CustomerInsightsWidget({
               </div>
             ) : (
               <div className="space-y-3">
-                {mostActiveCustomers.map((customer, index) => (
+                {mostActiveCustomers.map((customer) => (
                   <div
                     key={customer.accountId}
                     className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"

@@ -31,7 +31,7 @@ export async function authenticate(request: NextRequest): Promise<{
           },
           error: null,
         };
-      } catch (error) {
+      } catch {
         // JWT invalid, try access token
       }
     }

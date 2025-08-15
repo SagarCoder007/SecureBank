@@ -64,7 +64,7 @@ export function isAuthenticated(): boolean {
 /**
  * Gets current user data from localStorage
  */
-export function getCurrentUserData(): any | null {
+export function getCurrentUserData(): Record<string, unknown> | null {
   try {
     const userData = localStorage.getItem('user');
     return userData ? JSON.parse(userData) : null;
@@ -79,7 +79,7 @@ export function getCurrentUserData(): any | null {
  */
 export function hasRequiredRole(requiredRoles: string[]): boolean {
   const userData = getCurrentUserData();
-  if (!userData || !userData.role) {
+  if (!userData || typeof userData.role !== 'string') {
     return false;
   }
   return requiredRoles.includes(userData.role);

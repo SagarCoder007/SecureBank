@@ -82,7 +82,7 @@ export default function CustomerLoginPage() {
       } else {
         setErrors({ general: data.error || 'Login failed' });
       }
-    } catch (error) {
+    } catch {
       setErrors({ general: 'Network error. Please try again.' });
     } finally {
       setLoading(false);
@@ -209,7 +209,7 @@ export default function CustomerLoginPage() {
               {/* Links */}
               <div className="mt-6 text-center space-y-2">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Don't have an account?{' '}
+                  Don&apos;t have an account?{' '}
                   <a href="/register" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
                     Sign up here
                   </a>

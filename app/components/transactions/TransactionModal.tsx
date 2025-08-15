@@ -31,7 +31,6 @@ export function TransactionModal({ isOpen, onClose, type, account, onSuccess }: 
   const isDeposit = type === 'deposit';
   const title = isDeposit ? 'Make Deposit' : 'Make Withdrawal';
   const actionText = isDeposit ? 'Deposit' : 'Withdraw';
-  const color = isDeposit ? 'text-green-600' : 'text-red-600';
   const bgColor = isDeposit ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700';
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -84,10 +83,10 @@ export function TransactionModal({ isOpen, onClose, type, account, onSuccess }: 
           errorMsg
         );
       }
-    } catch (error) {
-      const errorMsg = 'Network error. Please try again.';
-      setError(errorMsg);
-      showError('Connection Error', errorMsg);
+          } catch {
+        const errorMsg = 'Network error. Please try again.';
+        setError(errorMsg);
+        showError('Connection Error', errorMsg);
     } finally {
       setLoading(false);
     }
@@ -100,10 +99,7 @@ export function TransactionModal({ isOpen, onClose, type, account, onSuccess }: 
     onClose();
   };
 
-  const incrementAmount = (value: number) => {
-    const current = parseFloat(amount) || 0;
-    setAmount((current + value).toString());
-  };
+  // Increment amount utility available for future use
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title={title} size="md">

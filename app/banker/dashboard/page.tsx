@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '../../components/layout/Header';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/Card';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { performCompleteLogout } from '../../lib/logout-utils';
@@ -170,8 +170,8 @@ export default function BankerDashboard() {
 
   useEffect(() => {
     if (dashboardData?.accounts) {
-      const filtered = filterAccounts(dashboardData.accounts, filters);
-      setFilteredAccounts(filtered);
+      const filtered = filterAccounts(dashboardData.accounts as Parameters<typeof filterAccounts>[0], filters);
+      setFilteredAccounts(filtered as Account[]);
     }
   }, [dashboardData, filters]);
 
@@ -279,7 +279,7 @@ export default function BankerDashboard() {
             Banking Portal Dashboard
           </h1>
           <p className="text-gray-600 dark:text-gray-300 mt-2">
-            Welcome back, {user.firstName}! Here's an overview of your banking operations.
+            Welcome back, {user.firstName}! Here&apos;s an overview of your banking operations.
           </p>
         </div>
 
@@ -401,7 +401,7 @@ export default function BankerDashboard() {
           <div className="w-full">
             <AccountsManagementWidget
               accounts={dashboardData?.accounts || []}
-              recentTransactions={dashboardData?.recentTransactions || [] as any}
+              recentTransactions={dashboardData?.recentTransactions || []}
               onFilterChange={handleFilterChange}
               filteredAccounts={filteredAccounts}
               onViewTransactionHistory={handleViewTransactionHistory}

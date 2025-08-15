@@ -4,7 +4,7 @@ import crypto from 'crypto';
 
 const SALT_ROUNDS = 12;
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
-const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || 'fallback-access-secret';
+// ACCESS_TOKEN_SECRET available for future use if needed
 
 /**
  * Password hashing utilities using bcrypt
@@ -47,10 +47,11 @@ export class JWTUtils {
   /**
    * Verify and decode JWT token
    */
-  static verifyJWT(token: string): any {
+  static verifyJWT(token: string): {userId: string; email: string; role: string} {
     try {
-      return jwt.verify(token, JWT_SECRET);
-    } catch (error) {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      return decoded as {userId: string; email: string; role: string};
+    } catch {
       throw new Error('Invalid or expired token');
     }
   }

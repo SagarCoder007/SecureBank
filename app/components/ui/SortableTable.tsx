@@ -9,13 +9,13 @@ export interface SortableColumn {
   key: string;
   label: string;
   sortable?: boolean;
-  render?: (value: any, row: any) => React.ReactNode;
+  render?: (value: unknown, row: Record<string, unknown>) => React.ReactNode;
   className?: string;
 }
 
 export interface SortableTableProps {
   columns: SortableColumn[];
-  data: any[];
+  data: Record<string, unknown>[];
   className?: string;
   emptyState?: React.ReactNode;
   loading?: boolean;
@@ -173,7 +173,7 @@ export function SortableTable({
                 <td key={column.key} className={cn('py-4 px-4', column.className)}>
                   {column.render 
                     ? column.render(row[column.key], row)
-                    : row[column.key]
+                    : String(row[column.key] ?? '')
                   }
                 </td>
               ))}

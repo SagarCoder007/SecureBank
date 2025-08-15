@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '../../lib/middleware';
-import { UserService, AccountService } from '../../lib/db';
+import { UserService } from '../../lib/db';
 import { prisma } from '../../lib/db';
 
 // GET - Fetch user's transactions

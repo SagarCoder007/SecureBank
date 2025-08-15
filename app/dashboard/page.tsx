@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '../components/layout/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
@@ -48,24 +48,7 @@ export default function CustomerDashboard() {
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [currentSection, setCurrentSection] = useState<'dashboard' | 'transactions'>('dashboard');
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) {
-      router.push('/login');
-      return;
-    }
-
-    const userData = JSON.parse(storedUser);
-    if (userData.role !== 'CUSTOMER') {
-      router.push('/login');
-      return;
-    }
-
-    setUser(userData);
-    fetchTransactions();
-  }, [router]);
-
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     try {
       const accessToken = localStorage.getItem('accessToken');
       if (!accessToken) {
@@ -98,12 +81,29 @@ export default function CustomerDashboard() {
           router.push('/login');
         }
       }
-    } catch (error) {
-      console.error('Error fetching transactions:', error);
+    } catch {
+      console.error('Error fetching transactions');
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (!storedUser) {
+      router.push('/login');
+      return;
+    }
+
+    const userData = JSON.parse(storedUser);
+    if (userData.role !== 'CUSTOMER') {
+      router.push('/login');
+      return;
+    }
+
+    setUser(userData);
+    fetchTransactions();
+  }, [router, fetchTransactions]);
 
   const handleLogout = async () => {
     console.log('Customer logout initiated');
@@ -149,7 +149,7 @@ export default function CustomerDashboard() {
         minute: '2-digit',
         timeZone: 'UTC' // Use UTC to ensure consistent rendering
       });
-    } catch (error) {
+    } catch {
       return dateString; // Fallback to original string
     }
   };

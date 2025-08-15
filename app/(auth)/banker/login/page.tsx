@@ -88,7 +88,7 @@ export default function BankerLoginPage() {
       } else {
         setErrors({ general: data.error || 'Login failed' });
       }
-    } catch (error) {
+    } catch {
       setErrors({ general: 'Network error. Please try again.' });
     } finally {
       setLoading(false);

@@ -54,21 +54,7 @@ export async function GET(
       orderBy: { createdAt: 'desc' }
     });
 
-    const formattedAccount = {
-      id: account.id,
-      accountNumber: account.accountNumber,
-      accountType: account.accountType,
-      balance: account.balance.toString(),
-      isActive: account.isActive,
-      createdAt: account.createdAt.toISOString(),
-      user: {
-        firstName: account.user.firstName,
-        lastName: account.user.lastName,
-        email: account.user.email,
-        role: account.user.role,
-        joinedAt: account.user.createdAt.toISOString(),
-      }
-    };
+    // Account details available for future use if needed
 
     const formattedTransactions = transactions.map(transaction => ({
       id: transaction.id,

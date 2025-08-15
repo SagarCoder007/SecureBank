@@ -5,8 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Button } from '../components/ui/Button';
 
 export default function DebugPage() {
-  const [debugInfo, setDebugInfo] = useState<any>({});
-  const [testResults, setTestResults] = useState<any>({});
+  const [debugInfo, setDebugInfo] = useState<{
+    hasUser?: boolean;
+    hasAccessToken?: boolean;
+    user?: { role?: string } | null;
+    accessTokenLength?: number;
+    accessTokenPreview?: string;
+  }>({});
+  const [testResults, setTestResults] = useState<Record<string, { success: boolean; status: string; data?: unknown }>>({});
 
   useEffect(() => {
     checkLocalStorage();
@@ -40,7 +46,7 @@ export default function DebugPage() {
       setTestResults(prev => ({
         ...prev,
         bankerLogin: {
-          status: response.status,
+          status: String(response.status),
           success: response.ok,
           data: response.ok ? data : data.error
         }
@@ -79,7 +85,7 @@ export default function DebugPage() {
       });
       
       console.log('Banker accounts response:', {
-        status: response.status,
+        status: String(response.status),
         statusText: response.statusText,
         headers: Object.fromEntries(response.headers.entries())
       });
@@ -90,7 +96,7 @@ export default function DebugPage() {
       setTestResults(prev => ({
         ...prev,
         bankerAccounts: {
-          status: response.status,
+          status: String(response.status),
           success: response.ok,
           data: response.ok ? `${data.accounts?.length || 0} accounts found` : data.error || data
         }
@@ -205,7 +211,7 @@ export default function DebugPage() {
                       setTestResults(prev => ({
                         ...prev,
                         logout: {
-                          status: response.status,
+                          status: String(response.status),
                           success: response.ok,
                           data: data.message || 'Logout test completed'
                         }
@@ -229,7 +235,7 @@ export default function DebugPage() {
                 </Button>
               </div>
               
-              {Object.entries(testResults).map(([test, result]: [string, any]) => (
+              {Object.entries(testResults).map(([test, result]) => (
                 <div key={test} className="border rounded-lg p-3">
                   <div className="flex items-center space-x-2">
                     <strong>{test}:</strong>
@@ -262,8 +268,8 @@ export default function DebugPage() {
               <Button>
                 <a href="/login">Customer Login</a>
               </Button>
-              <Button>
-                <a href="/">Home</a>
+              <Button onClick={() => window.location.href = '/'}>
+                Home
               </Button>
             </div>
           </CardContent>

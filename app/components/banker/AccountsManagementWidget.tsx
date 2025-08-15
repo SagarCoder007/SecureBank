@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/Card';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
-import { Modal } from '../ui/Modal';
+// Modal import available for future use
 import { exportAccountsToCSV, exportAccountsToPDF, exportTransactionsToCSV } from '../../lib/export-utils';
 
 interface FilterOptions {
@@ -124,13 +124,7 @@ export function AccountsManagementWidget({
     }).format(amount);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
+  // Date formatting utility available for future use
 
   if (loading) {
     return (
@@ -300,7 +294,7 @@ export function AccountsManagementWidget({
                 </span>
                 {filters.search && (
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                    Search: "{filters.search}"
+                    Search: &quot;{filters.search}&quot;
                   </span>
                 )}
                 {filters.status !== 'all' && (

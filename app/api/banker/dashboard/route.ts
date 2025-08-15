@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
     console.log('Dashboard API: Transaction trends fetched:', transactionTrends.length);
 
     // Process the trends data in JavaScript instead of SQL
-    const processedTrends = transactionTrends.reduce((acc: any[], transaction) => {
+    const processedTrends = transactionTrends.reduce((acc: Array<{month: string, type: string, count: number, total_amount: string}>, transaction) => {
       const month = transaction.createdAt.toISOString().substring(0, 7); // YYYY-MM format
       const existing = acc.find(item => item.month === month && item.type === transaction.type);
       
